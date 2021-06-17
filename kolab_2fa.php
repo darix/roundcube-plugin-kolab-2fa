@@ -50,7 +50,7 @@ class kolab_2fa extends rcube_plugin
         $plugin_internal_actions = array('plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify', 'refresh');
 
         // register library namespace to autoloader
-        $loader = include(INSTALL_PATH . 'vendor/autoload.php');
+        $loader = include(__DIR__ . '/vendor/autoload.php');
         $loader->set('Kolab2FA', array($this->home . '/lib'));
 
         $minimum_count = $this->minimum_count();
