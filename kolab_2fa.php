@@ -46,6 +46,8 @@ class kolab_2fa extends rcube_plugin
     {
         $rcmail = rcmail::get_instance();
 
+        $plugin_internal_actions = array('plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
+
         // register library namespace to autoloader
         $loader = include(INSTALL_PATH . 'vendor/autoload.php');
         $loader->set('Kolab2FA', array($this->home . '/lib'));
@@ -66,48 +68,44 @@ class kolab_2fa extends rcube_plugin
             $this->register_action('plugin.kolab-2fa-data', array($this, 'settings_data'));
             $this->register_action('plugin.kolab-2fa-save', array($this, 'settings_save'));
             $this->register_action('plugin.kolab-2fa-verify', array($this, 'settings_verify'));
-        }
-
-        $plugin_actions = array('plugin.kolab-2fa','plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
-        $plugin_internal_actions = array('plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
-        $session_tasks  = array('login', 'logout');
-
-        if ( $rcmail->config->get('kolab_2fa_enforce', false) ) {
-            $a_host = parse_url($args['host']);
-            $hostname = $_SESSION['hostname'] = $a_host['host'] ?: $args['host'];
-
-            $lookup = $rcmail->plugins->exec_hook('kolab_2fa_lookup', array(
-                'user'    => $rcmail->get_user_name(),
-                'host'    => $hostname,
-                'factors' => $rcmail->config->get('kolab_2fa_factors'),
-                'check'   => $rcmail->config->get('kolab_2fa_check', true),
-            ));
-            if (isset($lookup['factors'])) {
-                $factors = (array)$lookup['factors'];
-            }
-            // 2b. check storage if this user has 2FA enabled
-            else if ($lookup['check'] !== false && ($storage = $this->get_storage($args['user']))) {
-                $factors = (array)$storage->enumerate();
-            }
-
-            $factors_count = count($factors);
-            if ($factors_count === 0) {
-                if (!(in_array($args['task'], $session_tasks))) {
-                    if (!($args['task'] === 'settings' && in_array($args['action'], $plugin_actions))) {
-                        $this->api->output->redirect(array('_task' => 'settings', '_action' => 'plugin.kolab-2fa'));
-                    }
-                    else {
-                        if (!($args['task'] === 'settings' && in_array($args['action'], $plugin_internal_actions))) {
-                           rcube::write_log("errors", "showing mfa popup for " . $args['task'] . "/" . $args['action']);
-                           $this->api->output->show_message("MFA is enforced you need to have at least one 2nd factor configured. Current number of configured MFA tokens: " . $factors_count, 'error');
-                        }
-                    }
-                }
+            if ($this->need_factors() && !(in_array($args['action'], $plugin_internal_actions))) {
+                $this->api->output->show_message("MFA is enforced you need to have at least one 2nd factor configured. Current number of configured MFA tokens: " . $factors_count, 'error');
             }
         }
-
+        else {
+            if ($this->need_factors()) {
+                 $this->api->output->redirect(array('_task' => 'settings', '_action' => 'plugin.kolab-2fa'));
+            }
+        }
 
         return $args;
+    }
+
+    private function needs_factors() {
+        $rcmail = rcmail::get_instance();
+
+        if ( $rcmail->config->get('kolab_2fa_enforce', false) ) {
+          $a_host = parse_url($args['host']);
+          $hostname = $_SESSION['hostname'] = $a_host['host'] ?: $args['host'];
+
+          $lookup = $rcmail->plugins->exec_hook('kolab_2fa_lookup', array(
+              'user'    => $rcmail->get_user_name(),
+              'host'    => $hostname,
+              'factors' => $rcmail->config->get('kolab_2fa_factors'),
+              'check'   => $rcmail->config->get('kolab_2fa_check', true),
+          ));
+          if (isset($lookup['factors'])) {
+              $factors = (array)$lookup['factors'];
+          }
+          // 2b. check storage if this user has 2FA enabled
+          else if ($lookup['check'] !== false && ($storage = $this->get_storage($args['user']))) {
+              $factors = (array)$storage->enumerate();
+          }
+
+          $factors_count = count($factors);
+          return ($factors_count === 0)
+       }
+       return false;
     }
 
     /**
