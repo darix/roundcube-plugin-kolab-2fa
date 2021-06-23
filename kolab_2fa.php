@@ -119,6 +119,7 @@ class kolab_2fa extends rcube_plugin
     }
 
     private function minimum_count() {
+      $rcmail = rcmail::get_instance();
       $minimum_count = $rcmail->config->get('kolab_2fa_minimum_count', 1);
 
       if ( $rcmail->config->get('kolab_2fa_enforce', false) ) {
