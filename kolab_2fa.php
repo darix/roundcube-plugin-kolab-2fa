@@ -47,6 +47,7 @@ class kolab_2fa extends rcube_plugin
         $rcmail = rcmail::get_instance();
 
         $needs_factors = $this->need_factors();
+        $minimum_count = $this->minimum_count();
 
         $plugin_actions = array('plugin.kolab-2fa','plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
         $plugin_internal_actions = array('plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
@@ -76,7 +77,7 @@ class kolab_2fa extends rcube_plugin
                  $this->api->output->redirect(array('_task' => 'settings', '_action' => 'plugin.kolab-2fa'));
               }
               else if (!(in_array($args['action'], $plugin_internal_actions))) {
-                  $this->api->output->show_message("MFA is enforced you need to have at least one 2nd factor configured.", 'error');
+                  $this->api->output->show_message("MFA is enforced you need to have at least " . $minimum_count . " second factor configured.", 'error');
               }
             }
         }
@@ -93,12 +94,7 @@ class kolab_2fa extends rcube_plugin
         $rcmail = rcmail::get_instance();
 
         if ( $rcmail->config->get('kolab_2fa_enforce', false) ) {
-          $minimum_count = $rcmail->config->get('kolab_2fa_minimum_count', 1);
-
-          // we are in enforce mode ... so catch this configuration error and enforce at least one
-          if ($minimum_count < 1) {
-            $minimum_count = 1;
-          }
+          $minimum_count = $this->minimum_count();
           $a_host = parse_url($args['host']);
           $hostname = $_SESSION['hostname'] = $a_host['host'] ?: $args['host'];
 
@@ -120,6 +116,18 @@ class kolab_2fa extends rcube_plugin
           return ($factors_count < $minimum_count);
        }
        return false;
+    }
+
+    private function minimum_count() {
+      $minimum_count = $rcmail->config->get('kolab_2fa_minimum_count', 1);
+
+      if ( $rcmail->config->get('kolab_2fa_enforce', false) ) {
+          // we are in enforce mode ... so catch this configuration error and enforce at least one
+          if ($minimum_count < 1) {
+              $minimum_count = 1;
+          }
+      }
+      return $minimum_count;
     }
 
     /**
