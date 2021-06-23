@@ -81,7 +81,7 @@ class kolab_2fa extends rcube_plugin
         return $args;
     }
 
-    private function needs_factors() {
+    private function need_factors() {
         $rcmail = rcmail::get_instance();
 
         if ( $rcmail->config->get('kolab_2fa_enforce', false) ) {
