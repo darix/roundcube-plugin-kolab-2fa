@@ -48,6 +48,7 @@ class kolab_2fa extends rcube_plugin
 
         $needs_factors = $this->need_factors();
 
+        $plugin_actions = array('plugin.kolab-2fa','plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
         $plugin_internal_actions = array('plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
 
         // register library namespace to autoloader
@@ -70,8 +71,13 @@ class kolab_2fa extends rcube_plugin
             $this->register_action('plugin.kolab-2fa-data', array($this, 'settings_data'));
             $this->register_action('plugin.kolab-2fa-save', array($this, 'settings_save'));
             $this->register_action('plugin.kolab-2fa-verify', array($this, 'settings_verify'));
-            if ($needs_factors && !(in_array($args['action'], $plugin_internal_actions))) {
-                $this->api->output->show_message("MFA is enforced you need to have at least one 2nd factor configured.", 'error');
+            if ($needs_factors) {
+              if (!(in_array($args['action'], $plugin_actions))) {
+                 $this->api->output->redirect(array('_task' => 'settings', '_action' => 'plugin.kolab-2fa'));
+              }
+              else if (!(in_array($args['action'], $plugin_internal_actions))) {
+                  $this->api->output->show_message("MFA is enforced you need to have at least one 2nd factor configured.", 'error');
+              }
             }
         }
         else {
