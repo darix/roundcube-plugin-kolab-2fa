@@ -103,7 +103,7 @@ class kolab_2fa extends rcube_plugin
           }
 
           $factors_count = count($factors);
-          return ($factors_count === 0)
+          return ($factors_count === 0);
        }
        return false;
     }
