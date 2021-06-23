@@ -87,6 +87,12 @@ class kolab_2fa extends rcube_plugin
         $rcmail = rcmail::get_instance();
 
         if ( $rcmail->config->get('kolab_2fa_enforce', false) ) {
+          $minimum_count = $rcmail->config->get('kolab_2fa_minimum_count', 1);
+
+          // we are in enforce mode ... so catch this configuration error and enforce at least one
+          if ($minimum_count < 1) {
+            $minimum_count = 1;
+          }
           $a_host = parse_url($args['host']);
           $hostname = $_SESSION['hostname'] = $a_host['host'] ?: $args['host'];
 
@@ -105,7 +111,7 @@ class kolab_2fa extends rcube_plugin
           }
 
           $factors_count = count($factors);
-          return ($factors_count === 0);
+          return ($factors_count < $minimum_count);
        }
        return false;
     }
