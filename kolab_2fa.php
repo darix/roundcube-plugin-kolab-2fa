@@ -53,7 +53,6 @@ class kolab_2fa extends rcube_plugin
         $loader = include(INSTALL_PATH . 'vendor/autoload.php');
         $loader->set('Kolab2FA', array($this->home . '/lib'));
 
-        $needs_factors = $this->need_factors();
         $minimum_count = $this->minimum_count();
 
         if ($args['task'] === 'login' && $this->api->output) {
@@ -72,7 +71,8 @@ class kolab_2fa extends rcube_plugin
             $this->register_action('plugin.kolab-2fa-data', array($this, 'settings_data'));
             $this->register_action('plugin.kolab-2fa-save', array($this, 'settings_save'));
             $this->register_action('plugin.kolab-2fa-verify', array($this, 'settings_verify'));
-            if ($needs_factors) {
+
+            if ($this->need_factors()) {
               if (!(in_array($args['action'], $plugin_actions))) {
                  $this->api->output->redirect(array('_task' => 'settings', '_action' => 'plugin.kolab-2fa'));
               }
@@ -82,7 +82,7 @@ class kolab_2fa extends rcube_plugin
             }
         }
         else {
-            if ($needs_factors) {
+            if ($this->need_factors()) {
                  $this->api->output->redirect(array('_task' => 'settings', '_action' => 'plugin.kolab-2fa'));
             }
         }
