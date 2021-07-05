@@ -46,8 +46,8 @@ class kolab_2fa extends rcube_plugin
     {
         $rcmail = rcmail::get_instance();
 
-        $plugin_actions = array('plugin.kolab-2fa','plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
-        $plugin_internal_actions = array('plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify');
+        $plugin_actions = array('plugin.kolab-2fa','plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify', 'refresh');
+        $plugin_internal_actions = array('plugin.kolab-2fa-data', 'plugin.kolab-2fa-save', 'plugin.kolab-2fa-verify', 'refresh');
 
         // register library namespace to autoloader
         $loader = include(INSTALL_PATH . 'vendor/autoload.php');
