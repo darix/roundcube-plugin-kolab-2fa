@@ -32,6 +32,7 @@ $labels['qrcodeexplaintotp'] = 'Download an authenticator app on your phone. Two
 Launch the app on your phone, and add a new entry for this service. When prompted, scan the QR code below to configure your mobile app.';
 $labels['qrcodeexplainhotp'] = 'Download an authenticator app on your phone. One app known to work well is <strong>Google Authenticator</strong>, but any other HOTP app should also work.<br/><br/>
 Launch the app on your phone, and add a new entry for this service. When prompted, scan the QR code below to configure your mobile app.';
+$labels['explain_secret'] = "If you can not scan the QR code above, you can enter the secret code below into the app directly";
 
 $labels['yubikeyid'] = 'Your YubiKey ID';
 $labels['yubikeyidexplainyubikey'] = 'Press your YubiKey once and submit the generated code';

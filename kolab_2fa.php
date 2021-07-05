@@ -597,6 +597,8 @@ class kolab_2fa extends rcube_plugin
                 $table->add(null,
                     html::div('explain form-text', $this->gettext("qrcodeexplain$method"))
                     . html::tag('img', array('src' => 'data:image/gif;base64,R0lGODlhDwAPAIAAAMDAwAAAACH5BAEAAAAALAAAAAAPAA8AQAINhI+py+0Po5y02otnAQA7', 'class' => 'qrcode', 'rel' => $method))
+                    . html::div('explain form-text', $this->gettext('explain_secret'))
+                    . html::p('qrcode_text_plain', 'Hello world')
                 );
 
                 // add row for testing the factor
@@ -739,6 +741,9 @@ class kolab_2fa extends rcube_plugin
             if (method_exists($driver, 'get_provisioning_uri')) {
                 try {
                     $uri = $driver->get_provisioning_uri();
+                    $parsed_uri = parse_url($uri);
+                    parse_str($parsed_uri['query'], $parsed_query_string);
+                    $secret = $parsed_query_string['secret'];
 
                     $qr = new Endroid\QrCode\QrCode();
                     $qr->setText($uri)
@@ -748,6 +753,7 @@ class kolab_2fa extends rcube_plugin
                        ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
                        ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0));
                     $data['qrcode'] = base64_encode($qr->get());
+                    $data['secret'] = $secret;
                 }
                 catch (Exception $e) {
                     rcube::raise_error($e, true, false);

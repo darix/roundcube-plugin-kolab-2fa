@@ -275,6 +275,9 @@ window.rcmail && rcmail.addEventListener('init', function(evt) {
             if (data.qrcode) {
                 $('img.qrcode[rel='+method+']').attr('src', "data:image/png;base64," + data.qrcode);
             }
+            if (data.secret) {
+               $('.qrcode_text_plain').text(data.secret);
+            }
         }
         else if (window.console) {
             console.error("Cannot assign auth data", data);
