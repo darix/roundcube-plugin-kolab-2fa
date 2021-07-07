@@ -784,27 +784,40 @@ class kolab_2fa extends rcube_plugin
      */
     public function settings_verify()
     {
-        $method = rcube_utils::get_input_value('_method', rcube_utils::INPUT_POST);
+        //$method = rcube_utils::get_input_value('_method', rcube_utils::INPUT_POST);
         $timestamp = intval(rcube_utils::get_input_value('_timestamp', rcube_utils::INPUT_POST));
         $success = false;
 
-        if ($driver = $this->get_driver($method)) {
-            $data = @json_decode(rcube_utils::get_input_value('_data', rcube_utils::INPUT_POST), true);
-            if (is_array($data)) {
-                foreach ($data as $key => $value) {
-                    if ($value !== '******') {
-                        $driver->$key = $value;
+        $methods = array_unique(array_map(function($factor) {
+                list($method, $id) = explode(':', $factor);
+                return $method;
+            },
+            $this->login_factors
+        ));
+
+
+        foreach ($methods as $i => $method) {
+            if ($driver = $this->get_driver($method)) {
+                $data = @json_decode(rcube_utils::get_input_value('_data', rcube_utils::INPUT_POST), true);
+                if (is_array($data)) {
+                    foreach ($data as $key => $value) {
+                        if ($value !== '******') {
+                            $driver->$key = $value;
+                        }
                     }
                 }
+
+                $success = $driver->verify(rcube_utils::get_input_value('_code', rcube_utils::INPUT_POST), $timestamp);
+                $method = $driver->method;
             }
 
-            $success = $driver->verify(rcube_utils::get_input_value('_code', rcube_utils::INPUT_POST), $timestamp);
-            $method = $driver->method;
-        }
-
-        // put session into high-security mode
-        if ($success && !empty($_POST['_session'])) {
-            $_SESSION['kolab_2fa_secure_mode'] = time();
+            // put session into high-security mode
+            if ($success) {
+                if (!empty($_POST['_session'])) {
+                    $_SESSION['kolab_2fa_secure_mode'] = time();
+                }
+                break;
+            }
         }
 
         $this->api->output->command('plugin.verify_response', array(
